@@ -33,4 +33,5 @@ public interface UserService {
     Boolean isTokenValid(User user, String token);
     void cleanTokens(User user) throws Exception;
 
+    User findOneByIdentifier(String identifier);
 }

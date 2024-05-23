@@ -1,6 +1,7 @@
 package org.luismore.taller3.controllers;
 
 import org.luismore.taller3.domain.dtos.*;
+import org.luismore.taller3.domain.entities.Token;
 import org.luismore.taller3.domain.entities.User;
 import org.luismore.taller3.services.UserService;
 import jakarta.validation.Valid;
@@ -8,6 +9,7 @@ import org.luismore.taller3.domain.entities.User;
 import org.luismore.taller3.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,19 +25,36 @@ public class AuthController {
         this.userService = userService;
     }
 
+//    @PostMapping("/login")
+//    public ResponseEntity<GeneralResponse> login(@RequestBody @Valid UserLoginDTO info) {
+//        User user = userService.findByUsernameOrEmail(info.getIdentifier(), info.getIdentifier());
+//
+//        if (user == null) {
+//            return GeneralResponse.getResponse(HttpStatus.NOT_FOUND, "User not found");
+//        }
+//
+//        if (userService.checkPassword(user, info.getPassword())) {
+//            return GeneralResponse.getResponse(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+//        }
+//
+//        return GeneralResponse.getResponse(HttpStatus.OK, "Login successful");
+//    }
+
     @PostMapping("/login")
-    public ResponseEntity<GeneralResponse> login(@RequestBody @Valid UserLoginDTO info) {
+    public ResponseEntity<?> login(@ModelAttribute @Valid UserLoginDTO info, BindingResult validations){
+        //AQUI HICIMOS EL REFACTOR Y COMPLEMENTAMOS EN EL ESPACIO DE LOS ... CON LO QUE YA TENIAMOS
         User user = userService.findByUsernameOrEmail(info.getIdentifier(), info.getIdentifier());
-
         if (user == null) {
-            return GeneralResponse.getResponse(HttpStatus.NOT_FOUND, "User not found");
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
-        if (userService.checkPassword(user, info.getPassword())) {
-            return GeneralResponse.getResponse(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+        try {
+            Token token = userService.registerToken(user);
+            return new ResponseEntity<>(new TokenDTO(token), HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return GeneralResponse.getResponse(HttpStatus.OK, "Login successful");
     }
 
     @PostMapping("/register")

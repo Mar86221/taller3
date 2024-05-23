@@ -28,5 +28,9 @@ public interface UserService {
     boolean checkPassword(User user, String password);
 
 
+    //Token management
+    Token registerToken(User user) throws Exception;
+    Boolean isTokenValid(User user, String token);
+    void cleanTokens(User user) throws Exception;
 
 }

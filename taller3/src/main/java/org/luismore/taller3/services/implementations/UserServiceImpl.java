@@ -5,10 +5,13 @@ import org.luismore.taller3.domain.dtos.UserRegisterDTO;
 import org.luismore.taller3.domain.dtos.UserResponseDTO;
 import org.luismore.taller3.domain.entities.Token;
 import org.luismore.taller3.domain.entities.User;
+import org.luismore.taller3.repositories.TokenRepository;
 import org.luismore.taller3.repositories.UserRepository;
 import org.luismore.taller3.services.UserService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.luismore.taller3.utils.JWTTools;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -92,6 +95,56 @@ public class UserServiceImpl implements UserService {
     }
 
 
+
+    @Autowired
+    private JWTTools jwtTools;
+
+    @Autowired
+    private TokenRepository tokenRepository;
+
+    @Override
+    @Transactional(rollbackOn = Exception.class)
+    public Token registerToken(User user) throws Exception {
+        cleanTokens(user);
+
+        String tokenString = jwtTools.generateToken(user);
+        Token token = new Token(tokenString, user);
+
+        tokenRepository.save(token);
+
+        return token;
+    }
+
+    @Override
+    public Boolean isTokenValid(User user, String token) {
+        try {
+            cleanTokens(user);
+            List<Token> tokens = tokenRepository.findByUserAndActive(user, true);
+
+            tokens.stream()
+                    .filter(tk -> tk.getContent().equals(token))
+                    .findAny()
+                    .orElseThrow(() -> new Exception());
+
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    @Transactional(rollbackOn = Exception.class)
+    public void cleanTokens(User user) throws Exception {
+        List<Token> tokens = tokenRepository.findByUserAndActive(user, true);
+
+        tokens.forEach(token -> {
+            if(!jwtTools.verifyToken(token.getContent())) {
+                token.setActive(false);
+                tokenRepository.save(token);
+            }
+        });
+
+    }
 
 
 }

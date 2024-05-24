@@ -14,12 +14,16 @@ import java.util.Map;
 @Component
 public class JWTTools {
 
-    @Value("${jwt.exptime}$")
+//    @Value("${jwt.secret}")
+//    private String secret;
+//    @Value("${jwt.exptime}")
+//    private Integer exp;
+
+    @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.secret}$")
-    private Integer exp;
-
+    @Value("${jwt.exptime}")
+    private Long exp;
 
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();

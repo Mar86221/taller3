@@ -9,7 +9,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
@@ -26,6 +28,11 @@ public class WebSecurityConfiguration {
     private JWTTokenFilter filter;
 
     @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
     AuthenticationManager authenticationManagerBean(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder managerBuilder
                 = http.getSharedObject(AuthenticationManagerBuilder.class);
@@ -37,7 +44,7 @@ public class WebSecurityConfiguration {
                     if(user == null)
                         throw new UsernameNotFoundException("User: " + identifier + ", not found!");
 
-                    return user;
+                    return (UserDetails) user;
                 })
                 .passwordEncoder(passwordEncoder);
 

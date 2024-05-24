@@ -6,9 +6,12 @@ import org.luismore.taller3.domain.dtos.UserResponseDTO;
 import org.luismore.taller3.domain.entities.Token;
 import org.luismore.taller3.domain.entities.User;
 import org.luismore.taller3.domain.dtos.ChangePasswordDTO;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+
 
 public interface UserService {
     User findByIdentifier(String identifier);
@@ -34,4 +37,6 @@ public interface UserService {
     void cleanTokens(User user) throws Exception;
 
     User findOneByIdentifier(String identifier);
+    Optional<User> findUserAuthenticated();
+
 }
